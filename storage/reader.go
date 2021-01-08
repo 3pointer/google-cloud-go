@@ -154,7 +154,20 @@ func (o *ObjectHandle) NewRangeReader(ctx context.Context, offset, length int64)
 			}
 			if res.StatusCode == http.StatusNotFound {
 				res.Body.Close()
-				return ErrObjectNotExist
+				// fall back to use /storage/v1/ to request.
+				u.Path = fmt.Sprintf("/storage/v1/b/%s/o/%s", o.bucket, o.object)
+				req, err = http.NewRequest(verb, u.String(), nil)
+				if err != nil {
+					return err
+				}
+				res, err = o.c.hc.Do(req)
+				if err != nil {
+					return err
+				}
+				if res.StatusCode == http.StatusNotFound {
+					return ErrObjectNotExist
+				}
+				return nil
 			}
 			if res.StatusCode < 200 || res.StatusCode > 299 {
 				body, _ := ioutil.ReadAll(res.Body)

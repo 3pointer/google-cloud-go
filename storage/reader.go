@@ -106,6 +106,8 @@ func (o *ObjectHandle) NewRangeReader(ctx context.Context, offset, length int64)
 			return nil, err
 		}
 	}
+	fmt.Println("scheme", o.c.scheme)
+	fmt.Println("host", o.c.readHost)
 	u := &url.URL{
 		Scheme: o.c.scheme,
 		Host:   o.c.readHost,
